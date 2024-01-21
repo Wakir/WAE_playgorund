@@ -1,9 +1,11 @@
 """Weighted Aging Ensemble."""
 
 import numpy as np
+import random
 from sklearn import base
 from sklearn.utils.multiclass import _check_partial_fit_first_call
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+from imblearn.over_sampling import RandomOverSampler
 from ..ensembles.base import StreamingEnsemble
 from ..ensembles import pruning
 
@@ -79,6 +81,7 @@ class WAE(StreamingEnsemble):
         weight_calculation_method="kuncheva",
         aging_method="weights_proportional",
         rejuvenation_power=0.0,
+        n_classifiers = 3,
     ):
         """Initialization."""
         super().__init__(base_estimator, n_estimators, weighted=True)
@@ -88,6 +91,7 @@ class WAE(StreamingEnsemble):
         self.weight_calculation_method = weight_calculation_method
         self.aging_method = aging_method
         self.rejuvenation_power = rejuvenation_power
+        self.n_classifiers = n_classifiers
 
     def _prune(self):
         X, y = self.previous_X, self.previous_y
@@ -118,13 +122,16 @@ class WAE(StreamingEnsemble):
                 self.previous_X, self.previous_y)
 
         # Pre-pruning
-        if len(self.ensemble_) > self.n_estimators and not self.post_pruning:
-            self._prune()
+        for x in range(self.n_classifiers):
+            if len(self.ensemble_) > self.n_estimators and not self.post_pruning:
+                self._prune()
+            else:
+                break
 
         # Preparing and training new candidate
-        candidate_clf = base.clone(self.base_estimator)
-        candidate_clf.fit(X, y)
-        self.ensemble_.append(candidate_clf)
+        for x in range(self.n_classifiers):
+            candidate_clf = self._train_classifier(X, y)
+            self.ensemble_.append(candidate_clf)
         self.iterations_ = np.append(self.iterations_, [1])
 
         self._set_weights()
@@ -133,8 +140,11 @@ class WAE(StreamingEnsemble):
         self._extinct()
 
         # Post-pruning
-        if len(self.ensemble_) > self.n_estimators and self.post_pruning:
-            self._prune()
+        for x in range(self.n_classifiers):
+            if len(self.ensemble_) > self.n_estimators and self.post_pruning:
+                self._prune()
+            else:
+                break
 
         # Weights normalization
         self.weights_ = self.weights_ / np.sum(self.weights_)
@@ -145,6 +155,14 @@ class WAE(StreamingEnsemble):
         self.iterations_ += 1
 
         return self
+    
+    def _train_classifier(self, X, y):
+        irl = random.uniform(0.9, 1.1)
+        ros = RandomOverSampler(sampling_strategy=irl)
+        X_res, y_res = ros.fit_resample(X, y)
+        candidate_clf = base.clone(self.base_estimator)
+        candidate_clf.fit(X_res, y_res)
+        return candidate_clf
 
     def _accuracies(self):
         return np.array(
