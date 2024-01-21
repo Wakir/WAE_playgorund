@@ -6,6 +6,7 @@ from sklearn import base
 from sklearn.utils.multiclass import _check_partial_fit_first_call
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 from imblearn.over_sampling import RandomOverSampler
+from imblearn.under_sampling import RandomUnderSampler
 from ..ensembles.base import StreamingEnsemble
 from ..ensembles import pruning
 
@@ -132,7 +133,7 @@ class WAE(StreamingEnsemble):
         for x in range(self.n_classifiers):
             candidate_clf = self._train_classifier(X, y)
             self.ensemble_.append(candidate_clf)
-        self.iterations_ = np.append(self.iterations_, [1])
+            self.iterations_ = np.append(self.iterations_, [1])
 
         self._set_weights()
         self._rejuvenate()
@@ -157,9 +158,17 @@ class WAE(StreamingEnsemble):
         return self
     
     def _train_classifier(self, X, y):
-        irl = random.uniform(0.9, 1.1)
-        ros = RandomOverSampler(sampling_strategy=irl)
+        # irl = random.uniform(0.8, 1.0)
+        # print("irl = " + str(irl))
+        #ros = RandomOverSampler(sampling_strategy=irl)
+        ros = RandomOverSampler()
         X_res, y_res = ros.fit_resample(X, y)
+        #try:
+        #    X_res, y_res = ros.fit_resample(X, y)
+        #except ValueError:
+        #    print("Exception handled")
+        #    rus = RandomUnderSampler(sampling_strategy=irl)
+        #    X_res, y_res = rus.fit_resample(X, y)
         candidate_clf = base.clone(self.base_estimator)
         candidate_clf.fit(X_res, y_res)
         return candidate_clf
