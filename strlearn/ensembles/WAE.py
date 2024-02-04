@@ -2,6 +2,7 @@
 
 import numpy as np
 import random
+import math
 from sklearn import base
 from sklearn.utils.multiclass import _check_partial_fit_first_call
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
@@ -83,6 +84,7 @@ class WAE(StreamingEnsemble):
         aging_method="weights_proportional",
         rejuvenation_power=0.0,
         n_classifiers = 3,
+        scale = 0.4
     ):
         """Initialization."""
         super().__init__(base_estimator, n_estimators, weighted=True)
@@ -93,6 +95,7 @@ class WAE(StreamingEnsemble):
         self.aging_method = aging_method
         self.rejuvenation_power = rejuvenation_power
         self.n_classifiers = n_classifiers
+        self.scale = scale
 
     def _prune(self):
         X, y = self.previous_X, self.previous_y
@@ -158,20 +161,40 @@ class WAE(StreamingEnsemble):
         return self
     
     def _train_classifier(self, X, y):
-        # irl = random.uniform(0.8, 1.0)
-        # print("irl = " + str(irl))
-        #ros = RandomOverSampler(sampling_strategy=irl)
-        ros = RandomOverSampler()
-        X_res, y_res = ros.fit_resample(X, y)
-        #try:
-        #    X_res, y_res = ros.fit_resample(X, y)
-        #except ValueError:
-        #    print("Exception handled")
-        #    rus = RandomUnderSampler(sampling_strategy=irl)
-        #    X_res, y_res = rus.fit_resample(X, y)
+        irl = random.uniform(0.9, 1.1)
+        print("irl = " + str(irl))
+        X_res, y_res = self.resample(X, y, irl, self.scale)
         candidate_clf = base.clone(self.base_estimator)
         candidate_clf.fit(X_res, y_res)
         return candidate_clf
+    
+    def resample(self, X, y, irl, scale):
+        N = math.floor(X.shape[0] * scale)
+        N_m = math.floor(N / (irl + 1))
+        N_rm = N - N_m
+        if np.shape(np.where(y==0))[0] < np.shape(np.where(y==1))[0]:
+            minority_y = 0
+            majority_y = 1
+            minority_x = X[np.where(y==0)]
+            majority_x = X[np.where(y==1)]
+        else:
+            minority_y = 1
+            majority_y = 0
+            minority_x = X[np.where(y==1)]
+            majority_x = X[np.where(y==0)]
+        bootstrap_sample = np.empty(shape=(N , majority_x.shape[1] + 1))
+        for i in range(N_m):
+            sample = minority_x[random.randint(0, minority_x.shape[0] - 1)]
+            sample = np.insert(sample, 0 , minority_y)
+            bootstrap_sample[i] = sample
+        for i in range(N_rm):
+            sample = majority_x[random.randint(0, majority_x.shape[0] - 1)]
+            sample = np.insert(sample, 0 , majority_y)
+            bootstrap_sample[N_m + i] = sample
+        np.random.shuffle(bootstrap_sample)
+        y_res = bootstrap_sample[:, 0]
+        x_res = bootstrap_sample[:, 1:]
+        return x_res, y_res
 
     def _accuracies(self):
         return np.array(
