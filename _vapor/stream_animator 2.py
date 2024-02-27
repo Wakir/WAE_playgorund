@@ -16,7 +16,7 @@ import numpy as np
 from matplotlib.gridspec import GridSpec
 from tqdm import tqdm
 
-from strlearn.streams import StreamGenerator
+from strlearn2.streams import StreamGenerator
 
 mcargs = {
     "n_classes": 3,

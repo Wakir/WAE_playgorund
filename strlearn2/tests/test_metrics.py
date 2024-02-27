@@ -5,7 +5,7 @@ import sys
 from sklearn.datasets import make_classification
 from sklearn.naive_bayes import GaussianNB
 
-import strlearn as sl
+import strlearn2 as sl
 
 
 def test_precision_recall():

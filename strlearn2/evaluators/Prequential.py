@@ -28,7 +28,7 @@ class Prequential:
 
     :Example:
 
-    >>> import strlearn as sl
+    >>> import strlearn2 as sl
     >>> stream = sl.streams.StreamGenerator()
     >>> clf = sl.classifiers.AccumulatedSamplesClassifier()
     >>> evaluator = sl.evaluators.PrequentialEvaluator()

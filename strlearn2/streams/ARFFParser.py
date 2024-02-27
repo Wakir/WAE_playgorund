@@ -16,7 +16,7 @@ class ARFFParser:
 
     :Example:
 
-    >>> import strlearn as sl
+    >>> import strlearn2 as sl
     >>> stream = sl.streams.ARFFParser("Agrawal.arff")
     >>> clf = sl.classifiers.AccumulatedSamplesClassifier()
     >>> evaluator = sl.evaluators.PrequentialEvaluator()

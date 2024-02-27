@@ -4,7 +4,7 @@
 #
 # from sklearn.utils.estimator_checks import check_estimator
 #
-# import strlearn as sl
+# import strlearn2 as sl
 #
 #
 # def test_estimators():

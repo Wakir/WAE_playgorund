@@ -53,7 +53,7 @@ class WAE(StreamingEnsemble):
 
     :Examples:
 
-    >>> import strlearn as sl
+    >>> import strlearn2 as sl
     >>> from sklearn.naive_bayes import GaussianNB
     >>> stream = sl.streams.StreamGenerator()
     >>> clf = sl.ensembles.WAE(GaussianNB())
@@ -83,8 +83,9 @@ class WAE(StreamingEnsemble):
         weight_calculation_method="kuncheva",
         aging_method="weights_proportional",
         rejuvenation_power=0.0,
-        n_classifiers = 3,
-        scale = 0.4
+        n_classifiers=3,
+        scale=0.4,
+        base_quality_measure=None
     ):
         """Initialization."""
         super().__init__(base_estimator, n_estimators, weighted=True)
@@ -96,6 +97,7 @@ class WAE(StreamingEnsemble):
         self.rejuvenation_power = rejuvenation_power
         self.n_classifiers = n_classifiers
         self.scale = scale
+        self.base_quality_measure = base_quality_measure
 
     def _prune(self):
         X, y = self.previous_X, self.previous_y
@@ -114,6 +116,9 @@ class WAE(StreamingEnsemble):
         super().partial_fit(X, y, classes)
         if not self.green_light:
             return self
+
+        #do przetestowania
+        # self.previous_X, self.previous_y = (X, y)
 
         if len(self.ensemble_) == 0:
             self.weights_ = np.array([1])
@@ -202,23 +207,32 @@ class WAE(StreamingEnsemble):
              for m_clf in self.ensemble_]
         )
 
+    def _estimators_quality(self):
+        if self.base_quality_measure is not None:
+            return np.array(
+                [self.base_quality_measure(self.previous_y, m_clf.predict(self.previous_X))
+                 for m_clf in self.ensemble_]
+            )
+        else:
+            return self._accuracies()
+
     def _set_weights(self):
         if self.age_ > 0:
             if self.weight_calculation_method == "same_for_each":
                 self.weights_ = np.ones(len(self.ensemble_))
 
             elif self.weight_calculation_method == "kuncheva":
-                accuracies = self._accuracies()
+                accuracies = self._estimators_quality()
                 self.weights_ = np.log(accuracies / (1.0000001 - accuracies))
                 self.weights_[self.weights_ < 0] = 0
 
             elif self.weight_calculation_method == "pta_related_to_whole":
-                accuracies = self._accuracies()
+                accuracies = self._estimators_quality()
                 self.weights_ = accuracies / self.overall_accuracy
                 self.weights_[self.weights_ < self.theta] = 0
 
             elif self.weight_calculation_method == "bell_curve":
-                accuracies = self._accuracies()
+                accuracies = self._estimators_quality()
                 self.weights_ = (
                     1.0
                     / (2.0 * np.pi)
@@ -231,7 +245,7 @@ class WAE(StreamingEnsemble):
     def _aging(self):
         if self.age_ > 0:
             if self.aging_method == "weights_proportional":
-                accuracies = self._accuracies()
+                accuracies = self._estimators_quality()
                 self.weights_ = accuracies / np.sqrt(self.iterations_)
 
             elif self.aging_method == "constant":

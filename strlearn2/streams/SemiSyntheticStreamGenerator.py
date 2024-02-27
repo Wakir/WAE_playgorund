@@ -37,7 +37,7 @@ class SemiSyntheticStreamGenerator:
     :type evaluation_measures: list, optional (default=[])
 
     :Example:
-    >>> import strlearn as sl
+    >>> import strlearn2 as sl
     >>> from sklearn.datasets import load_breast_cancer
     >>> from sklearn.naive_bayes import GaussianNB
     >>> X, y =  load_breast_cancer(return_X_y=True)

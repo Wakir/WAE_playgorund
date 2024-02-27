@@ -1,8 +1,8 @@
 import numpy as np
 from sklearn.base import clone, ClassifierMixin, BaseEstimator
 from sklearn.model_selection import KFold
-from strlearn.ensembles.base import StreamingEnsemble
-from strlearn.classifiers import SampleWeightedMetaEstimator as SWME
+from strlearn2.ensembles.base import StreamingEnsemble
+from strlearn2.classifiers import SampleWeightedMetaEstimator as SWME
 from sklearn.metrics import cohen_kappa_score, accuracy_score
 
 class ROSE(StreamingEnsemble):

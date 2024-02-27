@@ -4,7 +4,7 @@ import sys
 
 from sklearn.metrics import accuracy_score, roc_auc_score
 
-import strlearn as sl
+import strlearn2 as sl
 from sklearn.naive_bayes import GaussianNB
 
 from ..metrics import balanced_accuracy_score, f1_score, geometric_mean_score_1

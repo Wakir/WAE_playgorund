@@ -2,7 +2,7 @@
 
 # -- Project information
 
-from strlearn import __version__
+from strlearn2 import __version__
 
 project = 'stream-learn'
 copyright = u"2019, P. Ksieniewicz, P. Zyblewski"

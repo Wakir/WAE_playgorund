@@ -31,7 +31,7 @@ class StreamGenerator:
 
     :Example:
 
-    >>> import strlearn as sl
+    >>> import strlearn2 as sl
     >>> stream = sl.streams.StreamGenerator(n_drifts=2, weights=[0.2, 0.8], concept_sigmoid_spacing=5)
     >>> clf = sl.classifiers.AccumulatedSamplesClassifier()
     >>> evaluator = sl.evaluators.PrequentialEvaluator()

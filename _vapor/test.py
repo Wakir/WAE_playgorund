@@ -10,7 +10,7 @@ import numpy as np
 from sklearn.base import clone
 from sklearn.naive_bayes import GaussianNB
 
-import strlearn as sl
+import strlearn2 as sl
 
 clf = [GaussianNB(), GaussianNB()]
 

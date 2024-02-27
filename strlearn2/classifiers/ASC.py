@@ -16,7 +16,7 @@ class ASC(BaseEnsemble, ClassifierMixin):
 
     :Example:
 
-    >>> import strlearn as sl
+    >>> import strlearn2 as sl
     >>> stream = sl.streams.StreamGenerator()
     >>> clf = sl.classifiers.AccumulatedSamplesClassifier()
     >>> evaluator = sl.evaluators.TestThenTrainEvaluator()

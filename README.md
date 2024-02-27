@@ -83,7 +83,7 @@ clf = GaussianNB()
 The next element is the data stream that we aim to process. In the example we will use a synthetic stream consisting of shocking number of 100 chunks and containing precisely one concept drift. We will prepare it using the `StreamGenerator()` class of the `stream-learn` module:
 
 ```python
-from strlearn.streams import StreamGenerator
+from strlearn2.streams import StreamGenerator
 stream = StreamGenerator(n_chunks=100, n_drifts=1)
 ```
 
@@ -93,7 +93,7 @@ The third requirement of the experiment is to specify the metrics used in the ev
 
 ```python
 from sklearn.metrics import accuracy_score
-from strlearn.metrics import precision
+from strlearn2.metrics import precision
 metrics = [accuracy_score, precision]
 ```
 
@@ -102,7 +102,7 @@ metrics = [accuracy_score, precision]
 The last necessary element of processing is the evaluator, i.e. the method of conducting the experiment. For example, we will choose the *Test-Then-Train* paradigm, described in more detail in [User Guide](https://w4k2.github.io/stream-learn/evaluators.html). It is important to note, that we need to provide the metrics that we will use in processing at the point of initializing the evaluator. In the case of none metrics given, it will use default pair of *accuracy* and *balanced accuracy* scores:
 
 ```python
-from strlearn.evaluators import TestThenTrain
+from strlearn2.evaluators import TestThenTrain
 evaluator = TestThenTrain(metrics)
 ```
 

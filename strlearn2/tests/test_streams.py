@@ -5,7 +5,7 @@ import numpy as np
 import requests
 import pytest
 from sklearn.metrics import accuracy_score
-import strlearn as sl
+import strlearn2 as sl
 import os
 from sklearn.naive_bayes import GaussianNB
 from sklearn.datasets import load_iris

@@ -1,13 +1,11 @@
 import numpy as np
-import csv
 from sklearn import preprocessing
 
-
-class CSVParser:
-    """ Stream-aware parser of datasets in CSV format.
+class NPYParser:
+    """ Stream-aware parser of datasets in numpy format.
 
     :type path: string
-    :param path: Path to the csv file.
+    :param path: Path to the npy file.
     :type chunk_size: integer, optional (default=200)
     :param chunk_size: The number of instances in each data chunk.
     :type n_chunks: integer, optional (default=250)
@@ -15,8 +13,8 @@ class CSVParser:
 
     :Example:
 
-    >>> import strlearn as sl
-    >>> stream = sl.streams.CSVParser("Agrawal.csv")
+    >>> import strlearn2 as sl
+    >>> stream = sl.streams.NPYParser("Agrawal.npy")
     >>> clf = sl.classifiers.AccumulatedSamplesClassifier()
     >>> evaluator = sl.evaluators.PrequentialEvaluator()
     >>> evaluator.process(clf, stream)
@@ -31,7 +29,6 @@ class CSVParser:
     [0.895      0.86935764 0.86452058 0.86935764 0.92134831]
     [0.87       0.85104088 0.84813907 0.85104088 0.9       ]]
     """
-
     def __init__(self, path, chunk_size=200, n_chunks=250):
         # Read file.
         self.name = path
@@ -47,16 +44,12 @@ class CSVParser:
         self.chunk_id = 0
         self.starting_chunk = False
 
+
     def _make_classification(self):
         # Read CSV
-        csv_content = self._read_csv()
-        csv_np = np.array(csv_content).astype(float)
-        return csv_np[:, :-1], csv_np[:, -1]
-
-    def _read_csv(self):
-        with open(self.path, 'r') as f:
-            reader = csv.reader(f)
-            return [line for line in reader]
+        ds = np.load(self.path)
+        self.classes_ = np.unique(ds[:,-1]).astype(int)
+        return ds[:,:-1], ds[:,-1]
 
     def __str__(self):
         return self.name
@@ -92,8 +85,6 @@ class CSVParser:
             self.previous_chunk = self.current_chunk
         else:
             self.X, self.y = self._make_classification()
-            self.label_encoder = preprocessing.LabelEncoder()
-            self.classes_ = np.unique(self.label_encoder.fit_transform(self.y))
             self.reset()
 
         self.chunk_id += 1

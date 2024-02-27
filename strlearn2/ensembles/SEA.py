@@ -23,7 +23,7 @@ class SEA(StreamingEnsemble):
 
     :Example:
 
-    >>> import strlearn as sl
+    >>> import strlearn2 as sl
     >>> stream = sl.streams.StreamGenerator()
     >>> clf = sl.ensembles.SEA()
     >>> evaluator = sl.evaluators.TestThenTrainEvaluator()

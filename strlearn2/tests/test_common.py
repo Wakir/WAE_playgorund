@@ -4,7 +4,7 @@ import sys
 
 from sklearn.neural_network import MLPClassifier
 
-import strlearn as sl
+import strlearn2 as sl
 
 
 def test_mlp_drifted():

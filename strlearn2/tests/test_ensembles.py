@@ -6,7 +6,7 @@ from sklearn.naive_bayes import GaussianNB
 
 import numpy as np
 import pytest
-import strlearn as sl
+import strlearn2 as sl
 
 
 def get_clfs():
