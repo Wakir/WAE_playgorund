@@ -1,9 +1,9 @@
-# from skmultiflow.trees.hoeffding_tree import HoeffdingTreeClassifier
-from sklearn.naive_bayes import GaussianNB
-from sklearn.tree import DecisionTreeClassifier
+from skmultiflow.trees.hoeffding_tree import HoeffdingTreeClassifier
+#from sklearn.ensemble import RandomForestClassifier
+#from sklearn.tree import DecisionTreeClassifier
 from strlearn.streams import StreamGenerator
-from strlearn.ensembles import UOB, OOB, WAE
-from strlearn2.ensembles import WAE as new_WAE
+from strlearn.ensembles import KUE, CDS, UOB, OOB, WAE
+from strlearn2.ensembles import WAE as new_WAE, ROSE, OALE
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score,  balanced_accuracy_score as bac, precision_score, recall_score
 from imblearn.metrics import geometric_mean_score as g_mean
@@ -72,9 +72,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--path", type=str, default='results')
     parser.add_argument("--parallel", dest='parallel', action='store_true')
-    parser.set_defaults(parallel=False)
+    parser.set_defaults(parallel=True)
     parser.add_argument("--reference", dest='reference', action='store_true')
-    parser.set_defaults(reference=False)
+    parser.set_defaults(reference=True)
     args = parser.parse_args()
 
     path = args.path
@@ -91,18 +91,22 @@ if __name__ == '__main__':
 
     chunk_classifiers = [3, 5, 10, 15]
 
-    base_classifier = GaussianNB()
-    # base_classifier = DecisionTreeClassifier()
+    #base_classifier = GaussianNB()
+    #base_classifier = RandomForestClassifier()
+    base_classifier = HoeffdingTreeClassifier()
+    #base_classifier = SGDClassifier()
 
     quality_measure = bac
 
-    reference_methods = [UOB, OOB,  WAE]
+    #reference_methods = [UOB, OOB,  WAE]
+    #reference_methods = [OALE, ROSE, KUE]
+    reference_methods = [CDS]
 
     metrics = [f1_score, g_mean, bac, precision_score, recall_score]
 
 
     if args.parallel:
-        Parallel(n_jobs=-1)(
+        """Parallel(n_jobs=-1)(
             delayed(conduct_experiment)(**kwargs)
             for kwargs in
             ({'streams_random_seeds': random_seeds, 'ensembles': (new_WAE(base_estimator=base_classifier, scale=scale, n_classifiers=n, base_quality_measure=quality_measure),),
@@ -123,7 +127,7 @@ if __name__ == '__main__':
               'file': os.path.join(path,
                                    f'Stream_sudden_drift_{str(100 * imb)}_imbalance_new_wae_{str(scale)}_{str(n)}_cl.npy')}
              for scale in scales for n in chunk_classifiers for imb in imbalance)
-        )
+        )"""
         if args.reference:
             Parallel(n_jobs=-1)(
                 delayed(conduct_experiment)(**kwargs)
@@ -163,7 +167,7 @@ if __name__ == '__main__':
                                        (ref.__name__,), metrics, [1 - imb, imb], False,
                                        os.path.join(path,
                                                     f'Stream_sudden_drift_{str(100 * imb)}_imbalance_{ref.__name__}.npy'))
-            for scale in scales:
+            """for scale in scales:
                 for n in chunk_classifiers:
                     conduct_experiment(random_seeds,
                                        (new_WAE(base_estimator=base_classifier, scale=scale, n_classifiers=n, base_quality_measure=quality_measure),),
@@ -175,7 +179,7 @@ if __name__ == '__main__':
                                        (new_WAE(base_estimator=base_classifier, scale=scale, n_classifiers=n, base_quality_measure=quality_measure),),
                                        (f"new_wae_{str(scale)}_{str(n)}_cl",), metrics, [1 - imb, imb], False,
                                        os.path.join(path,
-                                                    f'Stream_sudden_drift_{str(100 * imb)}_imbalance_new_wae_{str(scale)}_{str(n)}_cl.npy'))
+                                                    f'Stream_sudden_drift_{str(100 * imb)}_imbalance_new_wae_{str(scale)}_{str(n)}_cl.npy'))"""
 
 
 
