@@ -5,7 +5,7 @@ from strlearn.streams import StreamGenerator
 from strlearn.ensembles import KUE, CDS, UOB, OOB, WAE
 from strlearn2.ensembles import WAE as new_WAE, ROSE, OALE
 from sklearn.metrics import accuracy_score
-from sklearn.metrics import f1_score,  balanced_accuracy_score as bac, precision_score, recall_score
+from sklearn.metrics import f1_score,  balanced_accuracy_score as bac, precision_score, recall_score, accuracy_score
 from imblearn.metrics import geometric_mean_score as g_mean
 
 
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     base_classifier = HoeffdingTreeClassifier()
     #base_classifier = SGDClassifier()
 
-    quality_measure = bac
+    quality_measure = [accuracy_score, bac]
 
     #reference_methods = [UOB, OOB,  WAE]
     #reference_methods = [OALE, ROSE, KUE]
@@ -109,24 +109,24 @@ if __name__ == '__main__':
         Parallel(n_jobs=-1)(
             delayed(conduct_experiment)(**kwargs)
             for kwargs in
-            ({'streams_random_seeds': random_seeds, 'ensembles': (new_WAE(base_estimator=base_classifier, scale=scale, n_classifiers=n, base_quality_measure=quality_measure, pruning_criterion=quality_measure),),
-              'ensembles_labels': (f"new_wae_{str(scale)}_{str(n)}_cl",),
+            ({'streams_random_seeds': random_seeds, 'ensembles': (new_WAE(base_estimator=base_classifier, scale=1.0, n_classifiers=10, base_quality_measure=q, pruning_criterion=bac),),
+              'ensembles_labels': (f"new_wae_{str(q)}_cl",),
               'metrics': metrics,
               'imbalance': [1 - imb, imb], 'gradual': True,
-              'file': os.path.join(path, f'Stream_gradual_drift_{str(100 * imb)}_imbalance_new_wae_{str(scale)}_{str(n)}_cl.npy')}
-             for scale in scales for n in chunk_classifiers for imb in imbalance)
+              'file': os.path.join(path, f'Stream_gradual_drift_{str(100 * imb)}_imbalance_new_wae_{str(q)}_cl.npy')}
+             for q in quality_measure for imb in imbalance)
              )
         Parallel(n_jobs=-1)(
             delayed(conduct_experiment)(**kwargs)
             for kwargs in
             ({'streams_random_seeds': random_seeds,
-              'ensembles': (new_WAE(base_estimator=base_classifier, scale=scale, n_classifiers=n, base_quality_measure=quality_measure, pruning_criterion=quality_measure),),
-              'ensembles_labels': (f"new_wae_{str(scale)}_{str(n)}_cl",),
+              'ensembles': (new_WAE(base_estimator=base_classifier, scale=1.0, n_classifiers=10, base_quality_measure=q, pruning_criterion=bac),),
+              'ensembles_labels': (f"new_wae_{str(q)}_cl",),
               'metrics': metrics,
               'imbalance': [1 - imb, imb], 'gradual': False,
               'file': os.path.join(path,
-                                   f'Stream_sudden_drift_{str(100 * imb)}_imbalance_new_wae_{str(scale)}_{str(n)}_cl.npy')}
-             for scale in scales for n in chunk_classifiers for imb in imbalance)
+                                   f'Stream_sudden_drift_{str(100 * imb)}_imbalance_new_wae_{str(q)}_cl.npy')}
+             for q in quality_measure for imb in imbalance)
         )
         if args.reference:
             Parallel(n_jobs=-1)(

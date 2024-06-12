@@ -63,7 +63,7 @@ if __name__ == '__main__':
     parser.add_argument("--parallel", dest='parallel', action='store_true')
     parser.set_defaults(parallel=True)
     parser.add_argument("--reference", dest='reference', action='store_true')
-    parser.set_defaults(reference=True)
+    parser.set_defaults(reference=False)
     args = parser.parse_args()
 
     path = args.path
@@ -85,35 +85,23 @@ if __name__ == '__main__':
 
     quality_measure = bac
 
-    reference_methods = [OALE, ROSE, KUE, UOB, OOB,  WAE]
+    reference_methods = [CDS, OALE, ROSE, KUE, UOB, OOB,  WAE]
     #reference_methods = [CDS]
 
-    random_seeds = [194, 85, 186, 170, 200]
+    random_seeds = [170, 200, 200]
 
     metrics = [f1_score, g_mean, bac, precision_score, recall_score]
 
-    names = os.listdir("./ss_streams")
+    names = os.listdir("./real-str")
     #print(np.shape(names))
     names.sort()
     counter = 0
 
 for idx, name in enumerate(names):
-    stream = sl.streams.NPYParser("./ss_streams/%s" % name, chunk_size=250, n_chunks=random_seeds[idx])
+    stream = sl.streams.NPYParser("./real-str/%s" % name, chunk_size=250, n_chunks=random_seeds[idx])
 
 
     if args.parallel:
-        """Parallel(n_jobs=-1)(
-            delayed(conduct_experiment)(**kwargs)
-            for kwargs in
-            ({'streams_random_seeds': [random_seeds[idx]],
-                'ensembles': (new_WAE(base_estimator=base_classifier, scale=scale, n_classifiers=n, base_quality_measure=quality_measure),),
-                'ensembles_labels': (f"new_wae_{str(scale)}_{str(n)}_cl",),
-                'metrics': metrics,
-                'stream': stream,
-                'file': os.path.join(path,
-                                    f'Stream_{str(name)}_imbalance_new_wae_{str(scale)}_{str(n)}_cl.npy')}
-                for scale in scales for n in chunk_classifiers)
-        )"""
         if args.reference:
             Parallel(n_jobs=-1)(
                 delayed(conduct_experiment)(**kwargs)
@@ -126,6 +114,18 @@ for idx, name in enumerate(names):
                     'file': os.path.join(path,
                                         f'Stream_{str(name)}_imbalance_{ref.__name__}.npy')}
                     for ref in reference_methods))
+        Parallel(n_jobs=-1)(
+            delayed(conduct_experiment)(**kwargs)
+            for kwargs in
+            ({'streams_random_seeds': [random_seeds[idx]],
+                'ensembles': (new_WAE(base_estimator=base_classifier, scale=scale, n_classifiers=n, base_quality_measure=quality_measure, pruning_criterion=quality_measure),),
+                'ensembles_labels': (f"new_wae_{str(scale)}_{str(n)}_cl",),
+                'metrics': metrics,
+                'stream': stream,
+                'file': os.path.join(path,
+                                    f'Stream_{str(name)}_imbalance_new_wae_{str(scale)}_{str(n)}_cl.npy')}
+                for scale in scales for n in chunk_classifiers)
+        )
     else:
         if args.reference:
             for ref in reference_methods:

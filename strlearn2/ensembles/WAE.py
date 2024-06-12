@@ -85,7 +85,8 @@ class WAE(StreamingEnsemble):
         rejuvenation_power=0.0,
         n_classifiers=3,
         scale=0.4,
-        base_quality_measure=None
+        base_quality_measure=None,
+        addOne = False
     ):
         """Initialization."""
         super().__init__(base_estimator, n_estimators, weighted=True)
@@ -98,6 +99,7 @@ class WAE(StreamingEnsemble):
         self.n_classifiers = n_classifiers
         self.scale = scale
         self.base_quality_measure = base_quality_measure
+        self.addOne = addOne
 
     def _prune(self):
         X, y = self.previous_X, self.previous_y
@@ -138,10 +140,15 @@ class WAE(StreamingEnsemble):
                 break
 
         # Preparing and training new candidate
-        for x in range(self.n_classifiers):
+        if self.addOne:
             candidate_clf = self._train_classifier(X, y)
             self.ensemble_.append(candidate_clf)
             self.iterations_ = np.append(self.iterations_, [1])
+        else:
+            for x in range(self.n_classifiers):
+                candidate_clf = self._train_classifier(X, y)
+                self.ensemble_.append(candidate_clf)
+                self.iterations_ = np.append(self.iterations_, [1])
 
         self._set_weights()
         self._rejuvenate()
