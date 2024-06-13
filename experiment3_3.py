@@ -96,8 +96,11 @@ if __name__ == '__main__':
     base_classifier = HoeffdingTreeClassifier()
     #base_classifier = SGDClassifier()
 
-    quality_measure = [accuracy_score, bac]
-    quality_measure_name = ["accuracy", "bac"]
+    quality_measure = bac
+
+    addOne = [True, False]
+
+    addOne_name = ["addOne", "addMore"]
 
     #reference_methods = [UOB, OOB,  WAE]
     #reference_methods = [OALE, ROSE, KUE]
@@ -110,24 +113,24 @@ if __name__ == '__main__':
         Parallel(n_jobs=-1)(
             delayed(conduct_experiment)(**kwargs)
             for kwargs in
-            ({'streams_random_seeds': random_seeds, 'ensembles': (new_WAE(base_estimator=base_classifier, scale=1.0, n_classifiers=10, base_quality_measure= quality_measure[q], pruning_criterion=bac),),
-              'ensembles_labels': (f"new_wae_{str(quality_measure_name[q])}_cl",),
+            ({'streams_random_seeds': random_seeds, 'ensembles': (new_WAE(base_estimator=base_classifier, scale=1.0, n_classifiers=10, base_quality_measure= quality_measure[q], pruning_criterion=bac, addOne=addOne[a]),),
+              'ensembles_labels': (f"new_wae_{str(addOne_name[a])}_cl",),
               'metrics': metrics,
               'imbalance': [1 - imb, imb], 'gradual': True,
-              'file': os.path.join(path, f'Stream_gradual_drift_{str(100 * imb)}_imbalance_new_wae_{str(quality_measure_name[q])}_cl.npy')}
-             for q in range(len(quality_measure)) for imb in imbalance)
+              'file': os.path.join(path, f'Stream_gradual_drift_{str(100 * imb)}_imbalance_new_wae_{str(addOne_name[a])}_cl.npy')}
+             for a in range(len(addOne)) for imb in imbalance)
              )
         Parallel(n_jobs=-1)(
             delayed(conduct_experiment)(**kwargs)
             for kwargs in
             ({'streams_random_seeds': random_seeds,
-              'ensembles': (new_WAE(base_estimator=base_classifier, scale=1.0, n_classifiers=10, base_quality_measure=quality_measure[q], pruning_criterion=bac),),
-              'ensembles_labels': (f"new_wae_{str(quality_measure_name[q])}_cl",),
+              'ensembles': (new_WAE(base_estimator=base_classifier, scale=1.0, n_classifiers=10, base_quality_measure=quality_measure[a], pruning_criterion=bac, addOne=addOne[a]),),
+              'ensembles_labels': (f"new_wae_{str(addOne_name[a])}_cl",),
               'metrics': metrics,
               'imbalance': [1 - imb, imb], 'gradual': False,
               'file': os.path.join(path,
-                                   f'Stream_sudden_drift_{str(100 * imb)}_imbalance_new_wae_{str(quality_measure_name[q])}_cl.npy')}
-             for q in range(len(quality_measure)) for imb in imbalance)
+                                   f'Stream_sudden_drift_{str(100 * imb)}_imbalance_new_wae_{str(addOne_name[a])}_cl.npy')}
+             for a in range(len(addOne)) for imb in imbalance)
         )
         if args.reference:
             Parallel(n_jobs=-1)(
