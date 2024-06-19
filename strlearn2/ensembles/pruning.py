@@ -1,7 +1,13 @@
 from builtins import range
 
+from pymoo.algorithms.soo.nonconvex.ga import GA
+from pymoo.optimize import minimize
+from pymoo.termination.default import MaximumGenerationTermination
+
 import numpy as np
 from sklearn import metrics
+
+from strlearn2.ensembles.genetic_operators import FixedSizeSampling, BinaryMutation, BinaryCrossover, SubsetSelectionProblem
 
 PRUNING_CRITERION = ('accuracy')
 
@@ -40,3 +46,32 @@ class OneOffPruner(object):
         best_permutation.pop(loser)
 
         return best_permutation
+
+
+class GeneticPruning(object):
+    def __init__(self, ensemble_support_matrix, y, ensemble_size, pruning_criterion):
+        self.ensemble_support_matrix = ensemble_support_matrix
+        self.y = y
+        self.ensemble_size = ensemble_size
+        self.pruning_criterion = pruning_criterion
+        self.best_permutation = self.optimise_ensemble()
+
+    def optimise_ensemble(self):
+        problem = SubsetSelectionProblem(self.ensemble_support_matrix, self.y, self.ensemble_size,
+                                         self.pruning_criterion)
+        algorithm = GA(
+            pop_size=100,
+            sampling=FixedSizeSampling(),
+            crossover=BinaryCrossover(),
+            mutation=BinaryMutation(),
+            eliminate_duplicates=True
+        )
+        termination = MaximumGenerationTermination(500)
+        res = minimize(problem,
+                       algorithm,
+                       termination,
+                       seed=1,
+                       save_history=False,
+                       verbose=False)
+
+        return np.where(res.X)[0]

@@ -103,8 +103,11 @@ class WAE(StreamingEnsemble):
 
     def _prune(self):
         X, y = self.previous_X, self.previous_y
-        pruner = pruning.OneOffPruner(
-            self.ensemble_support_matrix(X), y, self.pruning_criterion
+        # pruner = pruning.OneOffPruner(
+        #     self.ensemble_support_matrix(X), y, self.pruning_criterion
+        # )
+        pruner = pruning.GeneticPruning(
+            self.ensemble_support_matrix(X), y, self.n_classifiers, self.base_quality_measure
         )
         self._filter_ensemble(pruner.best_permutation)
 
