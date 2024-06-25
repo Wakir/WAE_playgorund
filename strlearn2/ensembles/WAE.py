@@ -86,7 +86,8 @@ class WAE(StreamingEnsemble):
         n_classifiers=3,
         scale=0.4,
         base_quality_measure=None,
-        addOne = False
+        addOne = False,
+        pruner_type = pruning.MultipleOffPruner
     ):
         """Initialization."""
         super().__init__(base_estimator, n_estimators, weighted=True)
@@ -100,13 +101,11 @@ class WAE(StreamingEnsemble):
         self.scale = scale
         self.base_quality_measure = base_quality_measure
         self.addOne = addOne
+        self.pruner_type = pruner_type
 
     def _prune(self):
         X, y = self.previous_X, self.previous_y
-        # pruner = pruning.OneOffPruner(
-        #     self.ensemble_support_matrix(X), y, self.pruning_criterion
-        # )
-        pruner = pruning.GeneticPruning(
+        pruner = self.pruner_type(
             self.ensemble_support_matrix(X), y, self.n_classifiers, self.base_quality_measure
         )
         self._filter_ensemble(pruner.best_permutation)
