@@ -44,13 +44,14 @@ class TestThenTrain:
     """
 
     def __init__(
-        self, metrics=(accuracy_score, balanced_accuracy_score), verbose=False
+        self, metrics=(accuracy_score, balanced_accuracy_score), ir = None, verbose=False
     ):
         if isinstance(metrics, (list, tuple)):
             self.metrics = metrics
         else:
             self.metrics = [metrics]
         self.verbose = verbose
+        self.ir = ir
 
     def process(self, stream, clfs):
         """
@@ -88,7 +89,7 @@ class TestThenTrain:
                     y_pred = clf.predict(X)
 
                     self.scores[clfid, stream.chunk_id - 1] = [
-                        metric(y, y_pred, beta = 1) if metric is fbeta_score else
+                        metric(y, y_pred, beta = self.ir) if metric is fbeta_score else
                         metric(y, y_pred) for metric in self.metrics
                     ]
 
