@@ -87,8 +87,7 @@ class WAE(StreamingEnsemble):
         scale=0.4,
         base_quality_measure=None,
         addOne = False,
-        pruner_type=pruning.MultipleOffPruner,
-        sample=True
+        pruner_type=pruning.MultipleOffPruner
     ):
         """Initialization."""
         super().__init__(base_estimator, n_estimators, weighted=True)
@@ -103,7 +102,6 @@ class WAE(StreamingEnsemble):
         self.base_quality_measure = base_quality_measure
         self.addOne = addOne
         self.pruner_type = pruner_type
-        self.sample = sample
 
     def _prune(self):
         X, y = self.previous_X, self.previous_y
@@ -178,11 +176,8 @@ class WAE(StreamingEnsemble):
     
     def _train_classifier(self, X, y):
         irl = random.uniform(0.9, 1.1)
-        # print("irl = " + str(irl))
-        if self.sample:
-            X_res, y_res = self.resample(X, y, irl, self.scale)
-        else:
-            X_res, y_res = X, y
+        print("irl = " + str(irl))
+        X_res, y_res = self.resample(X, y, irl, self.scale)
         candidate_clf = base.clone(self.base_estimator)
         candidate_clf.fit(X_res, y_res)
         return candidate_clf

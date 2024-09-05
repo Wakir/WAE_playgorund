@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.base import ClassifierMixin
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import fbeta_score
 from tqdm import tqdm
 
 from ..metrics import balanced_accuracy_score
@@ -87,6 +88,7 @@ class TestThenTrain:
                     y_pred = clf.predict(X)
 
                     self.scores[clfid, stream.chunk_id - 1] = [
+                        metric(y, y_pred, beta = 1) if metric is fbeta_score else
                         metric(y, y_pred) for metric in self.metrics
                     ]
 
