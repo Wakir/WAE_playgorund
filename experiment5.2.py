@@ -5,7 +5,7 @@ from strlearn.streams import StreamGenerator
 from strlearn.ensembles import KUE, CDS, UOB, OOB, WAE
 from strlearn2.ensembles import WAE as new_WAE, ROSE, OALE
 from sklearn.metrics import accuracy_score
-from sklearn.metrics import f1_score,  balanced_accuracy_score as bac, precision_score, recall_score, fbeta_score, auc
+from sklearn.metrics import f1_score,  balanced_accuracy_score as bac, precision_score, recall_score, fbeta_score, roc_auc_score
 from specificity import specificity
 from imblearn.metrics import geometric_mean_score as g_mean
 
@@ -39,7 +39,8 @@ class Experiment:
         self._gradual_drift = gradual
         self.n_chunks = n_chunks
         self.n_features = n_features
-        self._evaluator = TestThenTrain(self._metrics)
+        self.ir = imbalance[1]
+        self._evaluator = TestThenTrain(self._metrics, self.ir)
         self._scores = np.empty((len(self._streams_random_seeds), len(self._ensembles), self.n_chunks-1, len(self._metrics)))
 
     def conduct(self, file=None):
@@ -107,7 +108,7 @@ if __name__ == '__main__':
     reference_methods = [UOB, OOB,  WAE, OALE, ROSE, KUE, CDS]
 
     #metrics = [recall_score]
-    metrics = [f1_score, g_mean, bac, precision_score, recall_score, specificity, fbeta_score, auc]
+    metrics = [f1_score, g_mean, bac, precision_score, recall_score, specificity, fbeta_score, roc_auc_score]
 
 
     if args.parallel:

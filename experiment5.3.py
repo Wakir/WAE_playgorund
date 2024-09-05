@@ -39,7 +39,8 @@ class Experiment:
         self._gradual_drift = gradual
         self.n_chunks = n_chunks
         self.n_features = n_features
-        self._evaluator = TestThenTrain(self._metrics)
+        self.ir = imbalance[1]
+        self._evaluator = TestThenTrain(self._metrics, self.ir)
         self._scores = np.empty((len(self._streams_random_seeds), len(self._ensembles), self.n_chunks-1, len(self._metrics)))
 
     def conduct(self, file=None):
