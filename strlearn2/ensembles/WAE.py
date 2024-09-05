@@ -87,7 +87,8 @@ class WAE(StreamingEnsemble):
         scale=0.4,
         base_quality_measure=None,
         addOne = False,
-        pruner_type = pruning.MultipleOffPruner
+        pruner_type=pruning.MultipleOffPruner,
+        sample=True
     ):
         """Initialization."""
         super().__init__(base_estimator, n_estimators, weighted=True)
@@ -102,6 +103,7 @@ class WAE(StreamingEnsemble):
         self.base_quality_measure = base_quality_measure
         self.addOne = addOne
         self.pruner_type = pruner_type
+        self.sample = sample
 
     def _prune(self):
         X, y = self.previous_X, self.previous_y
@@ -176,8 +178,11 @@ class WAE(StreamingEnsemble):
     
     def _train_classifier(self, X, y):
         irl = random.uniform(0.9, 1.1)
-        print("irl = " + str(irl))
-        X_res, y_res = self.resample(X, y, irl, self.scale)
+        # print("irl = " + str(irl))
+        if self.sample:
+            X_res, y_res = self.resample(X, y, irl, self.scale)
+        else:
+            X_res, y_res = X, y
         candidate_clf = base.clone(self.base_estimator)
         candidate_clf.fit(X_res, y_res)
         return candidate_clf
@@ -254,8 +259,8 @@ class WAE(StreamingEnsemble):
     def _aging(self):
         if self.age_ > 0:
             if self.aging_method == "weights_proportional":
-                accuracies = self._estimators_quality()
-                self.weights_ = accuracies / np.sqrt(self.iterations_)
+                # accuracies = self._estimators_quality()
+                self.weights_ = self.weights_ / np.sqrt(self.iterations_)
 
             elif self.aging_method == "constant":
                 self.weights_ -= self.theta * self.iterations_
