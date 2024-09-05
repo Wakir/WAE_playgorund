@@ -13,23 +13,21 @@ from strlearn2.ensembles.genetic_operators import FixedSizeSampling, BinaryMutat
 PRUNING_CRITERION = ('accuracy')
 
 class OneOffPruner(object):
-    def __init__(self, ensemble_support_matrix, y, pruning_criterion='accuracy'):
+    def __init__(self, ensemble_support_matrix, y, ensemble_size, pruning_criterion='accuracy'):
         self.pruning_criterion = pruning_criterion
         self.ensemble_support_matrix = ensemble_support_matrix
         self.y = y
+        self.ensemble_sie = ensemble_size
+        self.best_permutation = self.optimise_ensemble()
 
-        best_permutation = self.accuracy()
-
-        self.best_permutation = best_permutation
-
-    def accuracy(self):
+    def optimise_ensemble(self):
         """
         Accuracy pruning.
         """
         candidates_no = self.ensemble_support_matrix.shape[0]
 
         loser = 0
-        best_accuracy = 0.
+        best_criterion = 0.
         for cid in range(candidates_no):
             weights = np.array(
                 [0 if i == cid else 1 for i in range(candidates_no)])
@@ -37,10 +35,10 @@ class OneOffPruner(object):
                 weights[:, np.newaxis, np.newaxis]
             acumulated_weighted_support = np.sum(weighted_support, axis=0)
             decisions = np.argmax(acumulated_weighted_support, axis=1)
-            accuracy = metrics.accuracy_score(self.y, decisions)
-            if accuracy > best_accuracy:
+            criterion = self.pruning_criterion(self.y, decisions)
+            if criterion >  best_criterion:
                 loser = cid
-                best_accuracy = accuracy
+                best_criterion = criterion
 
         best_permutation = list(range(candidates_no))
         best_permutation.pop(loser)
@@ -129,7 +127,7 @@ class GeneticPruning(object):
             mutation=BinaryMutation(),
             eliminate_duplicates=True
         )
-        termination = MaximumGenerationTermination(500)
+        termination = MaximumGenerationTermination(100)
         res = minimize(problem,
                        algorithm,
                        termination,
