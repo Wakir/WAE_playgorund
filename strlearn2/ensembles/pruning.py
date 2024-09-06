@@ -68,7 +68,7 @@ class MultipleOffBestPruner(object):
             key[cid] = self.pruning_criterion(self.y, decisions)
 
         print(key)
-        best_permutation = list(np.argpartition(key, -self.ensemble_size)[-self.ensemble_size:])
+        best_permutation = list(np.argpartition(key, -min(self.ensemble_size, len(key)))[-min(self.ensemble_size, len(key)):])
         print("After")
         print(key)
         print(best_permutation)

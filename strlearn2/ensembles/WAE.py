@@ -87,7 +87,7 @@ class WAE(StreamingEnsemble):
         scale=0.4,
         base_quality_measure=None,
         addOne = False,
-        pruner_type=pruning.MultipleOffPruner
+        pruner_type=pruning.MultipleOffBestPruner
     ):
         """Initialization."""
         super().__init__(base_estimator, n_estimators, weighted=True)
