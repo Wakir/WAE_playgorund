@@ -44,7 +44,8 @@ class OneOffPruner(object):
         best_permutation.pop(loser)
 
         return best_permutation
-    
+
+
 class MultipleOffBestPruner(object):
     "Choose the best N classifiers"
     def __init__(self, ensemble_support_matrix, y, ensemble_size, pruning_criterion):
@@ -57,21 +58,21 @@ class MultipleOffBestPruner(object):
     def optimise_ensemble(self):
         candidates_no = self.ensemble_support_matrix.shape[0]
         key = np.empty(candidates_no)
-        print(key.shape)
+        # print(key.shape)
         for cid in range(candidates_no):
             weighted_support = self.ensemble_support_matrix[cid]
-            print("Weighted support:")
-            print(weighted_support.shape)
+            # print("Weighted support:")
+            # print(weighted_support.shape)
             decisions = np.argmax(weighted_support, axis=1)
-            print("Decisions:")
-            print(decisions.shape)
+            # print("Decisions:")
+            # print(decisions.shape)
             key[cid] = self.pruning_criterion(self.y, decisions)
 
-        print(key)
+        # print(key)
         best_permutation = list(np.argpartition(key, -min(self.ensemble_size, len(key)))[-min(self.ensemble_size, len(key)):])
-        print("After")
-        print(key)
-        print(best_permutation)
+        # print("After")
+        # print(key)
+        # print(best_permutation)
 
         return best_permutation
 

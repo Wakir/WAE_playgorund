@@ -106,7 +106,7 @@ class WAE(StreamingEnsemble):
     def _prune(self):
         X, y = self.previous_X, self.previous_y
         pruner = self.pruner_type(
-            self.ensemble_support_matrix(X), y, self.n_classifiers, self.base_quality_measure
+            self.ensemble_support_matrix(X), y, self.n_estimators, self.base_quality_measure
         )
         self._filter_ensemble(pruner.best_permutation)
 
@@ -176,7 +176,7 @@ class WAE(StreamingEnsemble):
     
     def _train_classifier(self, X, y):
         irl = random.uniform(0.9, 1.1)
-        print("irl = " + str(irl))
+        # print("irl = " + str(irl))
         X_res, y_res = self.resample(X, y, irl, self.scale)
         candidate_clf = base.clone(self.base_estimator)
         candidate_clf.fit(X_res, y_res)
